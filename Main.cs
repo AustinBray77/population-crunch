@@ -7,7 +7,7 @@ public partial class Main : Node
 {
     public static Random Rand = new Random();
 
-    public PackedScene _cityScene, _pathScene, _roadScene, _personScene;
+    public static PackedScene _cityScene, _pathScene, _roadScene, _personScene;
 
     private Camera2D _camera;
 
@@ -15,19 +15,19 @@ public partial class Main : Node
 
 
     //Implement AStar
-    public static Tuple<double, List<Road>> CalculateTime(City start, City end, HashSet<City> citiesPassedThrough)
+    public static Tuple<double, List<Road>> CalculateTime(Intersection start, Intersection end, HashSet<Intersection> intersectionsPassedThrough)
     {
         if (start == end)
         {
             return new Tuple<double, List<Road>>(0, new List<Road>());
         }
 
-        if (citiesPassedThrough.Contains(start))
+        if (intersectionsPassedThrough.Contains(start))
         {
             return new Tuple<double, List<Road>>(double.MaxValue, new List<Road>());
         }
 
-        citiesPassedThrough.Add(start);
+        intersectionsPassedThrough.Add(start);
 
         List<Road> nextRoads = new List<Road>();
 
@@ -36,17 +36,17 @@ public partial class Main : Node
             nextRoads = nextRoads.RoadInsertionSort(road, start, end);
         }
 
-        HashSet<City> citiesUsed = new HashSet<City>(citiesPassedThrough);
+        HashSet<Intersection> IntersectionsUsed = new HashSet<Intersection>(intersectionsPassedThrough);
         Tuple<double, List<Road>> bestResult = new Tuple<double, List<Road>>(double.MaxValue, new List<Road>());
 
         for (int i = 0; i < nextRoads.Count; i++)
         {
-            if (citiesUsed.Contains(nextRoads[i].Destination))
+            if (IntersectionsUsed.Contains(nextRoads[i].Destination))
             {
                 continue;
             }
 
-            Tuple<double, List<Road>> nextResult = CalculateTime(nextRoads[i].Destination, end, citiesPassedThrough);
+            Tuple<double, List<Road>> nextResult = CalculateTime(nextRoads[i].Destination, end, intersectionsPassedThrough);
 
             if (bestResult.Item1 > (nextResult.Item1 + nextRoads[i].TravelTime))
             {
@@ -54,7 +54,7 @@ public partial class Main : Node
                 bestResult.Item2.Add(nextRoads[i]);
             }
 
-            citiesUsed.Add(nextRoads[i].Destination);
+            IntersectionsUsed.Add(nextRoads[i].Destination);
         }
 
         return bestResult;
@@ -65,11 +65,17 @@ public partial class Main : Node
     {
         GD.Print("Started...");
         _loadResources();
-        _spawnInitialCities(3);
+        _spawnInitialCities();
 
-        GenerateTwoWayRoadBetweenCities(cities[0], cities[1]);
-        GenerateTwoWayRoadBetweenCities(cities[0], cities[2]);
-        GenerateRoadBetweenCities(cities[2], cities[1]);
+        for (int i = 0; i < cities.Count; i++)
+        {
+            int roadCount = Rand.Next(1, 4);
+
+            for (int j = 0; j < roadCount; j++)
+            {
+                GenerateRoadBetweenCities(cities[i], cities[Rand.Next(0, cities.Count)]);
+            }
+        }
     }
 
     private void _loadResources()
@@ -81,17 +87,13 @@ public partial class Main : Node
         _camera = GetChild(0, false) as Camera2D;
     }
 
-    private void _spawnInitialCities(int cityCount)
+    private void _spawnInitialCities()
     {
         cities = new List<City>();
 
-        Vector2[] positionList = new Vector2[] {
-            new Vector2 (0, 1500),
-            new Vector2 (3000, 0),
-            new Vector2 (-3000, 0)
-        };
+        Vector2[] positionList = Generator.GenerateStructures(7000f, 10287932);
 
-        for (int i = 0; i < cityCount; i++)
+        for (int i = 0; i < positionList.Length; i++)
         {
             cities.Add(_cityScene.Instantiate<City>());
             cities[i].Position = positionList[i];
@@ -109,17 +111,21 @@ public partial class Main : Node
 
         City end = excludingStart[Rand.Next(0, excludingStart.Count)];
 
-        Tuple<double, List<Road>> roads = CalculateTime(start, end, new HashSet<City>());
+        Tuple<double, List<Road>> roads = CalculateTime(start, end, new HashSet<Intersection>());
         Path2D path = _pathScene.Instantiate<Path2D>();
 
         path.Name = $"Path from {start.Name} to {end.Name}";
 
         AddChild(path);
 
+        roads.Item2.Reverse();
+
         foreach (Road road in roads.Item2)
         {
             path.Curve = CityExtras.Functions.AddCurves(path.Curve, road.Curve);
         }
+
+        path.Position = start.Position;
 
         Person person = _personScene.Instantiate<Person>();
 
@@ -136,6 +142,11 @@ public partial class Main : Node
 
     public void GenerateRoadBetweenCities(City origin, City end, List<Vector2> additionalPositions = null)
     {
+        if (origin == end)
+        {
+            return;
+        }
+
         Road road = _roadScene.Instantiate<Road>();
         Curve2D curve = new Curve2D();
         curve.AddPoint(origin.Position);

@@ -22,6 +22,9 @@ namespace CityExtras
             (float)Math.Acos(DotProduct2D(u, v) / (u.Magnitude() * v.Magnitude()));
 
 
+        public static float NextRangeFloat(this Random random, float min, float max)
+            => (float)(random.NextDouble() * (max - min)) + min;
+
         public static Curve2D AddCurves(Curve2D a, Curve2D b)
         {
             if (a.GetBakedPoints().Length == 0)
@@ -52,7 +55,7 @@ namespace CityExtras
             return Projection.Magnitude();
         }
 
-        public static List<Road> RoadInsertionSort(this List<Road> list, Road item, City origin, City destination)
+        public static List<Road> RoadInsertionSort(this List<Road> list, Road item, Intersection origin, Intersection destination)
         {
             Vector2 originToDestinationVector = new Vector2(destination.Position.X - origin.Position.X, destination.Position.Y - origin.Position.Y);
             Vector2 originToInsertedDestination = new Vector2(item.Destination.Position.X - origin.Position.X, item.Destination.Position.Y - origin.Position.Y);

@@ -3,7 +3,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public partial class City : Area2D
+public partial class City : Intersection
 {
     [Export]
     public int Population { get; set; } = 0;
@@ -13,7 +13,7 @@ public partial class City : Area2D
 
     private BetterTimer _tripTimer, _growthTimer;
 
-    public List<Road> Roads;
+    public Color Color;
 
     public Main MainReference;
 
@@ -33,6 +33,7 @@ public partial class City : Area2D
         Population = (int)Main.Rand.Next(10, 200);
         _tripTimer = new BetterTimer(600 / Population, 1000 / Population, _OnTripTimerTimeout);
         _growthTimer = new BetterTimer(10, _OnGrowthTimerTimeout);
+        Color = new Color(Main.Rand.NextRangeFloat(0.5f, 1.0f), Main.Rand.NextRangeFloat(0.5f, 1.0f), Main.Rand.NextRangeFloat(0.5f, 1.0f), 1);
     }
 
     private void _StartTimers()
@@ -43,7 +44,7 @@ public partial class City : Area2D
 
     private void _DrawCity()
     {
-        AddChild(Graphics.DrawCircle(Vector2.Zero, 100, Graphics.Orange, 20));
+        AddChild(Graphics.DrawCircle(Vector2.Zero, 100, Color, 20));
     }
 
     public void UpdatePopulation()

@@ -9,7 +9,7 @@ namespace CityExtras
         public static readonly Color TarGray = new Color(0.1f, 0.1f, 0.1f, 1);
         public static readonly Color Green = new Color(0, 1, 0, 1);
         public static readonly Color Yellow = new Color(1, 1, 0, 1);
-        public static readonly Color Red = new Color(1, 0, 0, 0);
+        public static readonly Color Red = new Color(1, 0, 0, 1);
         public static readonly Color Orange = new Color(1, 0.5f, 0, 1);
 
         public static Line2D DrawLine(Vector2[] points, Color color, int width, Vector2 offset = new Vector2())

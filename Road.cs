@@ -5,8 +5,8 @@ using CityExtras;
 
 public partial class Road : Path2D
 {
-    public City Origin { get; private set; }
-    public City Destination { get; private set; }
+    public Intersection Origin { get; private set; }
+    public Intersection Destination { get; private set; }
 
     public List<Person> People { get; private set; }
 
@@ -19,20 +19,27 @@ public partial class Road : Path2D
     public float TravelTime { get => Length / Speed; }
 
     // Called after _Ready by the instantiating function
-    public void Initialize(City origin, City destination, int speed)
+    public void Initialize(Intersection origin, Intersection destination, int speed)
     {
         origin.Roads.Add(this);
         Origin = origin;
         Destination = destination;
         People = new List<Person>();
         Speed = speed;
-        Length = Functions.Distance(origin, destination);
+        Length = origin.Position.DistanceTo(destination.Position);
 
         _DrawRoad();
     }
 
     private void _DrawRoad()
     {
+        var children = GetChildren();
+
+        while (children.Count > 0)
+        {
+            RemoveChild(children[0]);
+        }
+
         Line2D roadLine = Graphics.DrawLine(Curve.GetBakedPoints(), Graphics.TarGray, 20, Position);
 
         Vector2 roadDirectionVector = Destination.Position - Origin.Position;
@@ -45,6 +52,19 @@ public partial class Road : Path2D
         {
             AddChild(line);
         }
+    }
+
+    public void SplitAtIntersection(Intersection newIntersection)
+    {
+        Intersection oldDestination = Destination;
+
+        Destination = newIntersection;
+
+        Road continuation = Main._roadScene.Instantiate<Road>();
+
+        _DrawRoad();
+
+        newIntersection.Roads.Add(continuation);
     }
 
     // Called when the node enters the scene tree for the first time.

@@ -14,17 +14,22 @@ public partial class Person : PathFollow2D
         _destination = end;
 
         GD.Print($"Journey Started -> {_homeCity.Name}, {_destination.Name}");
+
+        Line2D line = Graphics.DrawCircle(Position, 20, _destination.Color, 5);
+
+        AddChild(line);
     }
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        AddChild(Graphics.DrawCircle(Position, 20, Graphics.Red, 5));
+        GD.Print("Here Buddy Circle");
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
+        //QueueRedraw();
         if (_homeCity == null || _destination == null)
         {
             return;
@@ -32,6 +37,6 @@ public partial class Person : PathFollow2D
 
         int speed = 40;
 
-        Progress += (speed / Functions.Distance(_homeCity, _destination));
+        Progress += speed; /// Functions.Distance(_homeCity, _destination));
     }
 }
