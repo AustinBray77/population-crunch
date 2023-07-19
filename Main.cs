@@ -7,7 +7,9 @@ public partial class Main : Node
 {
     public static Random Rand = new Random();
 
-    public static PackedScene _cityScene, _pathScene, _roadScene, _personScene;
+    public static Generator _generator;
+
+    public static PackedScene _cityScene, _pathScene, _roadScene, _personScene, _junctionScene;
 
     private Camera2D _camera;
 
@@ -64,34 +66,27 @@ public partial class Main : Node
     public override void _Ready()
     {
         GD.Print("Started...");
-        _loadResources();
-        _spawnInitialCities();
-
-        for (int i = 0; i < cities.Count; i++)
-        {
-            int roadCount = Rand.Next(1, 4);
-
-            for (int j = 0; j < roadCount; j++)
-            {
-                GenerateRoadBetweenCities(cities[i], cities[Rand.Next(0, cities.Count)]);
-            }
-        }
+        _LoadResources();
+        _SpawnInitialCities();
+        _GenerateRoads();
     }
 
-    private void _loadResources()
+    private void _LoadResources()
     {
         _cityScene = GD.Load("res://City.tscn") as PackedScene;
         _roadScene = GD.Load("res://Road.tscn") as PackedScene;
         _pathScene = GD.Load("res://Path2D.tscn") as PackedScene;
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
+        _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
+        _generator = new Generator(696969, 7000);
     }
 
-    private void _spawnInitialCities()
+    private void _SpawnInitialCities()
     {
         cities = new List<City>();
 
-        Vector2[] positionList = Generator.GenerateStructures(7000f, 10287932);
+        Vector2[] positionList = _generator.GenerateStructures(300, 0.021f);
 
         for (int i = 0; i < positionList.Length; i++)
         {
@@ -101,6 +96,41 @@ public partial class Main : Node
             cities[i].Name = i.ToString();
             AddChild(cities[i]);
         }
+    }
+
+    private void _GenerateRoads()
+    {
+        Tuple<Junction[], int> initialRoadGroup = _generator.GenerateInitialRoads(0.05f, 100);
+
+        Junction[] initialRoads = initialRoadGroup.Item1;
+
+        int directionSplit = initialRoadGroup.Item2;
+
+        GD.Print($"Initial Road Count: {initialRoads.Length / 2}");
+
+        foreach (Junction junction in initialRoads)
+        {
+            AddChild(junction);
+        }
+
+        Road[] roads = new Road[initialRoads.Length];
+
+        for (int i = 0; i < initialRoads.Length; i += 2)
+        {
+            Tuple<Road, Road> result = GenerateTwoWayRoadBetweenIntersections(initialRoads[i], initialRoads[i + 1]);
+
+            roads[i] = result.Item1;
+            roads[i + 1] = result.Item2;
+        }
+
+        for (int i = 0; i < directionSplit; i += 2)
+        {
+            for (int j = directionSplit; j < initialRoads.Length; j += 2)
+            {
+
+            }
+        }
+
     }
 
     public void GenerateTrip(City start)
@@ -134,24 +164,24 @@ public partial class Main : Node
         person.StartJourney(start, end);
     }
 
-    public void GenerateTwoWayRoadBetweenCities(City a, City b)
+    public Tuple<Road, Road> GenerateTwoWayRoadBetweenIntersections(Intersection a, Intersection b)
     {
-        GenerateRoadBetweenCities(a, b);
-        GenerateRoadBetweenCities(b, a);
+        return new(GenerateRoadBetweenIntersections(a, b), GenerateRoadBetweenIntersections(b, a));
     }
 
-    public void GenerateRoadBetweenCities(City origin, City end, List<Vector2> additionalPositions = null)
+    public Road GenerateRoadBetweenIntersections(Intersection origin, Intersection end, List<Vector2> additionalPositions = null)
     {
         if (origin == end)
         {
-            return;
+            GD.Print("Early return on road creation");
+            return null;
         }
 
         Road road = _roadScene.Instantiate<Road>();
         Curve2D curve = new Curve2D();
         curve.AddPoint(origin.Position);
 
-        if (!(additionalPositions == null))
+        if (additionalPositions != null)
         {
             foreach (Vector2 position in additionalPositions)
             {
@@ -166,6 +196,8 @@ public partial class Main : Node
 
         AddChild(road);
         road.Initialize(origin, end, 40);
+
+        return road;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.

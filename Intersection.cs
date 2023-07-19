@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-public class Intersection : Area2D
+public partial class Intersection : Area2D
 {
-    public List<Road> Roads;
+    public List<Road> Roads { get; set; }
 }

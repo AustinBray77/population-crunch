@@ -4,15 +4,24 @@ using System.Collections.Generic;
 
 public class Generator
 {
-    public static Vector2[] GenerateStructures(float chunkSize, int seed, float minimumDistance = 300f, float density = 0.021f)
+    private int _seed { get; set; }
+    private float _chunkSize { get; set; }
+
+    public Generator(int seed, float chunkSize)
+    {
+        _seed = seed;
+        _chunkSize = chunkSize;
+    }
+
+    public Vector2[] GenerateStructures(float minimumDistance, float density)
     {
         List<Vector2> positions = new List<Vector2>();
 
-        Random random = new Random(seed);
+        Random random = new Random(_seed);
 
-        for (float i = -chunkSize / 2; i < chunkSize / 2; i += minimumDistance)
+        for (float i = -_chunkSize / 2; i < _chunkSize / 2; i += minimumDistance)
         {
-            for (float j = -chunkSize / 2; j < chunkSize / 2; j += minimumDistance)
+            for (float j = -_chunkSize / 2; j < _chunkSize / 2; j += minimumDistance)
             {
                 if (random.NextDouble() < density)
                 {
@@ -24,12 +33,52 @@ public class Generator
         return positions.ToArray();
     }
 
-    public static Curve2D[] GenerateInitialRoads(float chunkSize, int seed, float density)
+    public Tuple<Junction[], int> GenerateInitialRoads(float density, float minimumDistance = 100f)
     {
-        List<Curve2D> roads = new List<Curve2D>();
+        List<Junction> roads = new List<Junction>();
 
+        Random random = new Random(_seed);
 
+        //NS Roads
+        for (float i = -_chunkSize / 2; i < _chunkSize / 2; i += minimumDistance)
+        {
+            if (random.NextDouble() < density)
+            {
+                Vector2 northPosition = new Vector2(i, _chunkSize / 2);
+                Vector2 southPosition = new Vector2(i, -_chunkSize / 2);
 
-        return roads.ToArray();
+                Junction northJunction = Main._junctionScene.Instantiate() as Junction;
+                Junction southJunction = Main._junctionScene.Instantiate() as Junction;
+
+                northJunction.Position = northPosition;
+                southJunction.Position = southPosition;
+
+                roads.Add(northJunction);
+                roads.Add(southJunction);
+            }
+        }
+
+        int EWStart = roads.Count;
+
+        //EW Roads
+        for (float i = -_chunkSize / 2; i < _chunkSize / 2; i += minimumDistance)
+        {
+            if (random.NextDouble() < density)
+            {
+                Vector2 eastPosition = new Vector2(_chunkSize / 2, i);
+                Vector2 westPosition = new Vector2(-_chunkSize / 2, i);
+
+                Junction eastJunction = Main._junctionScene.Instantiate() as Junction;
+                Junction westJunction = Main._junctionScene.Instantiate() as Junction;
+
+                eastJunction.Position = eastPosition;
+                westJunction.Position = westPosition;
+
+                roads.Add(eastJunction);
+                roads.Add(westJunction);
+            }
+        }
+
+        return new(roads.ToArray(), EWStart);
     }
 }

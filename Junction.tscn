@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://qtarlw38h01t"]
+
+[ext_resource type="Script" path="res://Junction.cs" id="1_om3wk"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_taqs3"]
+
+[node name="Area2D" type="Area2D"]
+script = ExtResource("1_om3wk")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_taqs3")

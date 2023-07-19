@@ -21,6 +21,54 @@ namespace CityExtras
         public static float AngleBetweenVectors(Vector2 u, Vector2 v) =>
             (float)Math.Acos(DotProduct2D(u, v) / (u.Magnitude() * v.Magnitude()));
 
+        public static Vector2 LineIntersection(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2)
+        {
+            float x, y, mb, ma, ba, bb;
+
+            if (a1.X - a2.X == 0)
+            {
+                if (b1.X - b2.X == 0)
+                {
+                    return Vector2.Inf;
+                }
+
+                x = a1.X;
+                mb = (b1.Y - b2.Y) / (b1.X - b2.X);
+                bb = b1.Y - mb * b1.X;
+
+                y = mb * x + bb;
+
+                return new Vector2(x, y);
+            }
+
+            if (b1.X - b2.X == 0)
+            {
+                x = b1.X;
+                ma = (a1.Y - a2.Y) / (a1.X - a2.X);
+                ba = a1.Y - ma * a1.X;
+
+                y = ma * x + ba;
+
+                return new Vector2(x, y);
+            }
+
+            if (a1.Y - a2.Y == 0)
+            {
+
+            }
+
+            ma = (a1.Y - a2.Y) / (a1.X - a2.X);
+            mb = (b1.Y - b2.Y) / (b1.X - b2.X);
+
+            ba = a1.Y - ma * a1.X;
+            bb = b1.Y - mb * b1.X;
+
+            x = (bb - ba) / (ma - mb);
+            y = ma * x + ba;
+
+            return new Vector2(x, y);
+        }
+
 
         public static float NextRangeFloat(this Random random, float min, float max)
             => (float)(random.NextDouble() * (max - min)) + min;
