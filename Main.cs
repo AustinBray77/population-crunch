@@ -69,6 +69,7 @@ public partial class Main : Node
         _LoadResources();
         _SpawnInitialCities();
         _GenerateRoads();
+        GenerateTrip(cities[0]);
     }
 
     private void _LoadResources()
@@ -79,14 +80,14 @@ public partial class Main : Node
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
-        _generator = new Generator(696969, 7000);
+        _generator = new Generator(8796969, 15000);
     }
 
     private void _SpawnInitialCities()
     {
         cities = new List<City>();
 
-        Vector2[] positionList = _generator.GenerateStructures(300, 0.021f);
+        Vector2[] positionList = _generator.GenerateStructures(500, 0.021f);
 
         for (int i = 0; i < positionList.Length; i++)
         {
@@ -100,7 +101,7 @@ public partial class Main : Node
 
     private void _GenerateRoads()
     {
-        Tuple<Junction[], int> initialRoadGroup = _generator.GenerateInitialRoads(0.05f, 100);
+        Tuple<Junction[], int> initialRoadGroup = _generator.GenerateInitialRoads(0.07f, 750);
 
         Junction[] initialRoads = initialRoadGroup.Item1;
 
@@ -127,8 +128,75 @@ public partial class Main : Node
         {
             for (int j = directionSplit; j < initialRoads.Length; j += 2)
             {
+                Vector2 newJunctPosition = Road.Intersection(roads[i], roads[j]);
 
+                GD.Print($"Intersecting Roads -> {i} and {j}");
+
+                if (newJunctPosition == Vector2.Inf)
+                {
+                    continue;
+                }
+
+
+                Junction newJunction = _junctionScene.Instantiate() as Junction;
+                newJunction.Position = newJunctPosition;
+
+                AddChild(newJunction);
+
+                AddChild(roads[i].InsertIntersection(newJunction));
+                AddChild(roads[i + 1].InsertIntersection(newJunction));
+
+                AddChild(roads[j].InsertIntersection(newJunction));
+                AddChild(roads[j + 1].InsertIntersection(newJunction));
             }
+        }
+
+        for (int i = 0; i < cities.Count; i++)
+        {
+            int closestRoad = 0;
+            Vector2 connectionPoint = Vector2.Inf;
+            float minDistance = Mathf.Inf;
+
+            float x = cities[i].Position.X;
+            float y = cities[i].Position.Y;
+
+            for (int j = 0; j < roads.Length; j += 2)
+            {
+                if (roads[j].RoadLine.ValueAt(x) == y)
+                {
+                    closestRoad = j;
+                    minDistance = 0;
+                    break;
+                }
+
+                Vector2 curPoint;
+                float curDistance = roads[j].RoadLine.DistanceTo(cities[i].Position, out curPoint);
+
+                if (curDistance < minDistance)
+                {
+                    closestRoad = j;
+                    connectionPoint = curPoint;
+                    minDistance = curDistance;
+                }
+            }
+
+            if (minDistance == 0)
+            {
+                AddChild(roads[closestRoad].InsertIntersection(cities[i]));
+                AddChild(roads[closestRoad + 1].InsertIntersection(cities[i]));
+
+                continue;
+            }
+
+            Junction newJunction = _junctionScene.Instantiate() as Junction;
+
+            newJunction.Position = connectionPoint;
+            AddChild(newJunction);
+
+            AddChild(roads[closestRoad].InsertIntersection(newJunction));
+            AddChild(roads[closestRoad + 1].InsertIntersection(newJunction));
+
+            GenerateTwoWayRoadBetweenIntersections(cities[i], newJunction);
         }
 
     }
@@ -139,7 +207,8 @@ public partial class Main : Node
 
         excludingStart.Remove(start);
 
-        City end = excludingStart[Rand.Next(0, excludingStart.Count)];
+        City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
+            cities[8];
 
         Tuple<double, List<Road>> roads = CalculateTime(start, end, new HashSet<Intersection>());
         Path2D path = _pathScene.Instantiate<Path2D>();
@@ -150,12 +219,22 @@ public partial class Main : Node
 
         roads.Item2.Reverse();
 
+        Curve2D pathCurve = new Curve2D();
+
+        pathCurve.AddPoint(start.Position);
+
         foreach (Road road in roads.Item2)
         {
-            path.Curve = CityExtras.Functions.AddCurves(path.Curve, road.Curve);
+            GD.Print(road.Name);
+            AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));
+            pathCurve.AddPoint(road.Destination.Position);
         }
 
         path.Position = start.Position;
+
+        path.Curve = pathCurve;
+
+        AddChild(Graphics.DrawLine(path.Curve.GetBakedPoints(), Graphics.Green, 20));
 
         Person person = _personScene.Instantiate<Person>();
 
@@ -164,12 +243,12 @@ public partial class Main : Node
         person.StartJourney(start, end);
     }
 
-    public Tuple<Road, Road> GenerateTwoWayRoadBetweenIntersections(Intersection a, Intersection b)
+    /*public Tuple<Road, Road> GenerateTwoWayRoadBetweenIntersections(Intersection a, Intersection b)
     {
         return new(GenerateRoadBetweenIntersections(a, b), GenerateRoadBetweenIntersections(b, a));
-    }
+    }*/
 
-    public Road GenerateRoadBetweenIntersections(Intersection origin, Intersection end, List<Vector2> additionalPositions = null)
+    public Road GenerateTwoWayRoadBetweenIntersections(Intersection origin, Intersection end, List<Vector2> additionalPositions = null)
     {
         if (origin == end)
         {

@@ -37,6 +37,13 @@ public partial class Person : PathFollow2D
 
         int speed = 40;
 
+        float preProgress = ProgressRatio;
+
         Progress += speed; /// Functions.Distance(_homeCity, _destination));
+
+        if (preProgress > ProgressRatio)
+        {
+            Dispose();
+        }
     }
 }

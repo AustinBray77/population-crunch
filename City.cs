@@ -83,7 +83,7 @@ public partial class City : Intersection
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
-        _tripTimer.IncrementTime(delta);
+        //_tripTimer.IncrementTime(delta);
         _growthTimer.IncrementTime(delta);
     }
 }
