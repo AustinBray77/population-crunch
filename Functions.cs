@@ -27,33 +27,56 @@ namespace CityExtras
 
 
             Vector2[] partitionA = OriginSort(vectors.Skip(0).Take(vectors.Length / 2).ToArray());
-            Vector2[] partitionB = OriginSort(vectors.Skip(0).Take(bLen).ToArray());
+            Vector2[] partitionB = OriginSort(vectors.Skip(vectors.Length / 2).Take(bLen).ToArray());
+
+            GD.Print("part A:");
+            foreach (Vector2 vec in partitionA)
+            {
+                GD.Print(vec);
+            }
+
+            GD.Print("part B:");
+            foreach (Vector2 vec in partitionB)
+            {
+                GD.Print(vec);
+            }
+
+            Vector2[] result = new Vector2[vectors.Length];
 
             for (int i = 0, aIndex = 0, bIndex = 0; i < vectors.Length; i++)
             {
                 if (aIndex >= partitionA.Length)
                 {
-                    vectors[i] = partitionB[bIndex++];
+                    result[i] = partitionB[bIndex];
+                    bIndex++;
                     continue;
                 }
 
                 if (bIndex >= partitionB.Length)
                 {
-                    vectors[i] = partitionA[aIndex++];
+                    result[i] = partitionA[aIndex];
+                    aIndex++;
                     continue;
                 }
 
-                if (partitionA[aIndex].DirectionTo(Vector2.Zero) < partitionB[bIndex].DirectionTo(Vector2.Zero))
+                float aX = partitionA[aIndex].X;
+                float aY = partitionA[aIndex].Y;
+                float bX = partitionB[bIndex].X;
+                float bY = partitionB[bIndex].Y;
+
+                if (aX * aX + aY * aY < bX * bX + bY * bY)
                 {
-                    vectors[i] = partitionA[aIndex++];
+                    result[i] = partitionA[aIndex];
+                    aIndex++;
                 }
                 else
                 {
-                    vectors[i] = partitionB[bIndex++];
+                    result[i] = partitionB[bIndex];
+                    bIndex++;
                 }
             }
 
-            return vectors;
+            return result;
         }
 
         public static float Distance(City a, City b) =>

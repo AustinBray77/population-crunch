@@ -29,8 +29,8 @@ public partial class City : Intersection
     private void _ConfigureVariables()
     {
         Roads = new List<Road>();
-        GrowthFactor = Main.Rand.NextDouble() * (0.3) + 1.05;
-        Population = (int)Main.Rand.Next(10, 200);
+        GrowthFactor = Main.Rand.NextDouble() * 0.3 + 1.05;
+        Population = Main.Rand.Next(10, 200);
         _tripTimer = new BetterTimer(600 / Population, 1000 / Population, _OnTripTimerTimeout);
         _growthTimer = new BetterTimer(10, _OnGrowthTimerTimeout);
         Color = new Color(Main.Rand.NextRangeFloat(0.5f, 1.0f), Main.Rand.NextRangeFloat(0.5f, 1.0f), Main.Rand.NextRangeFloat(0.5f, 1.0f), 1);

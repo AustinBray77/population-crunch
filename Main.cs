@@ -17,7 +17,7 @@ public partial class Main : Node
 
 
     //Implement AStar
-    public static Tuple<double, List<Road>> CalculateTime(Intersection start, Intersection end, HashSet<Intersection> intersectionsPassedThrough)
+    public static Tuple<double, List<Road>> CalculateTime(Intersection start, Intersection end, HashSet<Intersection> intersectionsPassedThrough, double currentBestTime = Double.MaxValue)
     {
         if (start == end)
         {
@@ -68,7 +68,7 @@ public partial class Main : Node
         GD.Print("Started...");
         _LoadResources();
         _SpawnInitialCities();
-        _GenerateRoads(1500f);
+        _GenerateRoads(3200f);
         GenerateTrip(cities[0]);
     }
 
@@ -80,26 +80,16 @@ public partial class Main : Node
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
-        _generator = new Generator(8796969, 15000);
+        _generator = new Generator(879699, 15000);
     }
 
     private void _SpawnInitialCities()
     {
         cities = new List<City>();
 
-        Vector2[] positionList = _generator.GenerateStructures(500, 0.021f);
+        Vector2[] positionList = _generator.GenerateStructures(500, 0.05f);
 
         positionList = Functions.OriginSort(positionList);
-
-        for (int i = 0; i < positionList.Length; i++)
-        {
-            if (positionList[i].DistanceTo(Vector2.Zero) > positionList[i + 1].DistanceTo(Vector2.Zero))
-            {
-                Vector2 temp = positionList[i];
-                positionList[i] = positionList[i + 1];
-                positionList[i + 1] = temp;
-            }
-        }
 
         for (int i = 0; i < positionList.Length; i++)
         {
@@ -113,13 +103,12 @@ public partial class Main : Node
 
     private void _GenerateRoads(float distance)
     {
-        float distanceSQ = distance * distance;
-
         for (int i = 0; i < cities.Count; i++)
         {
             for (int j = i + 1; j < cities.Count; j++)
             {
-                if (cities[j].Position.DistanceSquaredTo(Vector2.Zero) - cities[i].Position.DistanceSquaredTo(Vector2.Zero) > distanceSQ)
+
+                if (Mathf.Abs(cities[j].Position.Magnitude() - cities[i].Position.Magnitude()) > distance)
                 {
                     break;
                 }
@@ -132,15 +121,6 @@ public partial class Main : Node
                 GenerateTwoWayRoadBetweenIntersections(cities[i], cities[j]);
             }
         }
-    }
-
-    private List<City> _CitiesWithinRadius(City origin, float radius)
-    {
-        List<City> output = new();
-
-        //** TODO: Add algorithm to find all cities with circle **//
-
-        return output;
     }
 
     /*private void _GenerateRoads()
@@ -252,7 +232,7 @@ public partial class Main : Node
         excludingStart.Remove(start);
 
         City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
-            cities[8];
+            cities[25];
 
         Tuple<double, List<Road>> roads = CalculateTime(start, end, new HashSet<Intersection>());
         Path2D path = _pathScene.Instantiate<Path2D>();
@@ -274,13 +254,12 @@ public partial class Main : Node
             pathCurve.AddPoint(road.Destination.Position);
         }
 
-        path.Position = start.Position;
-
         path.Curve = pathCurve;
 
         AddChild(Graphics.DrawLine(path.Curve.GetBakedPoints(), Graphics.Green, 20));
 
         Person person = _personScene.Instantiate<Person>();
+        person.Position = path.Position;
 
         path.AddChild(person);
 
