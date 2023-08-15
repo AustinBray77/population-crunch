@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace CityExtras
@@ -13,6 +14,46 @@ namespace CityExtras
             Node child = node.GetChild(index);
             node.RemoveChild(child);
             child.Dispose();
+        }
+
+        public static Vector2[] OriginSort(Vector2[] vectors)
+        {
+            if (vectors.Length == 1)
+            {
+                return vectors;
+            }
+
+            int bLen = vectors.Length % 2 == 0 ? vectors.Length / 2 : vectors.Length / 2 + 1;
+
+
+            Vector2[] partitionA = OriginSort(vectors.Skip(0).Take(vectors.Length / 2).ToArray());
+            Vector2[] partitionB = OriginSort(vectors.Skip(0).Take(bLen).ToArray());
+
+            for (int i = 0, aIndex = 0, bIndex = 0; i < vectors.Length; i++)
+            {
+                if (aIndex >= partitionA.Length)
+                {
+                    vectors[i] = partitionB[bIndex++];
+                    continue;
+                }
+
+                if (bIndex >= partitionB.Length)
+                {
+                    vectors[i] = partitionA[aIndex++];
+                    continue;
+                }
+
+                if (partitionA[aIndex].DirectionTo(Vector2.Zero) < partitionB[bIndex].DirectionTo(Vector2.Zero))
+                {
+                    vectors[i] = partitionA[aIndex++];
+                }
+                else
+                {
+                    vectors[i] = partitionB[bIndex++];
+                }
+            }
+
+            return vectors;
         }
 
         public static float Distance(City a, City b) =>

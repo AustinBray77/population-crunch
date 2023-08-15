@@ -68,7 +68,7 @@ public partial class Main : Node
         GD.Print("Started...");
         _LoadResources();
         _SpawnInitialCities();
-        _GenerateRoads();
+        _GenerateRoads(1500f);
         GenerateTrip(cities[0]);
     }
 
@@ -89,6 +89,18 @@ public partial class Main : Node
 
         Vector2[] positionList = _generator.GenerateStructures(500, 0.021f);
 
+        positionList = Functions.OriginSort(positionList);
+
+        for (int i = 0; i < positionList.Length; i++)
+        {
+            if (positionList[i].DistanceTo(Vector2.Zero) > positionList[i + 1].DistanceTo(Vector2.Zero))
+            {
+                Vector2 temp = positionList[i];
+                positionList[i] = positionList[i + 1];
+                positionList[i + 1] = temp;
+            }
+        }
+
         for (int i = 0; i < positionList.Length; i++)
         {
             cities.Add(_cityScene.Instantiate<City>());
@@ -99,7 +111,39 @@ public partial class Main : Node
         }
     }
 
-    private void _GenerateRoads()
+    private void _GenerateRoads(float distance)
+    {
+        float distanceSQ = distance * distance;
+
+        for (int i = 0; i < cities.Count; i++)
+        {
+            for (int j = i + 1; j < cities.Count; j++)
+            {
+                if (cities[j].Position.DistanceSquaredTo(Vector2.Zero) - cities[i].Position.DistanceSquaredTo(Vector2.Zero) > distanceSQ)
+                {
+                    break;
+                }
+
+                if (cities[j].DistanceTo(cities[i]) > distance)
+                {
+                    continue;
+                }
+
+                GenerateTwoWayRoadBetweenIntersections(cities[i], cities[j]);
+            }
+        }
+    }
+
+    private List<City> _CitiesWithinRadius(City origin, float radius)
+    {
+        List<City> output = new();
+
+        //** TODO: Add algorithm to find all cities with circle **//
+
+        return output;
+    }
+
+    /*private void _GenerateRoads()
     {
         Tuple<Junction[], int> initialRoadGroup = _generator.GenerateInitialRoads(0.07f, 750);
 
@@ -199,7 +243,7 @@ public partial class Main : Node
             GenerateTwoWayRoadBetweenIntersections(cities[i], newJunction);
         }
 
-    }
+    }*/
 
     public void GenerateTrip(City start)
     {
@@ -243,12 +287,12 @@ public partial class Main : Node
         person.StartJourney(start, end);
     }
 
-    /*public Tuple<Road, Road> GenerateTwoWayRoadBetweenIntersections(Intersection a, Intersection b)
+    public Tuple<Road, Road> GenerateTwoWayRoadBetweenIntersections(Intersection a, Intersection b)
     {
         return new(GenerateRoadBetweenIntersections(a, b), GenerateRoadBetweenIntersections(b, a));
-    }*/
+    }
 
-    public Road GenerateTwoWayRoadBetweenIntersections(Intersection origin, Intersection end, List<Vector2> additionalPositions = null)
+    public Road GenerateRoadBetweenIntersections(Intersection origin, Intersection end, List<Vector2> additionalPositions = null)
     {
         if (origin == end)
         {

@@ -5,7 +5,9 @@ using CityExtras;
 
 public partial class Road : Path2D
 {
-    public List<Intersection> Intersections;
+    public Intersection Origin;
+
+    public Intersection Destination;
 
     public List<Person> People { get; private set; }
 
@@ -21,15 +23,13 @@ public partial class Road : Path2D
 
     public void Update()
     {
-        RoadLine = new Line(Intersections[0].Position, Intersections[Intersections.Count - 1].Position);
-        Name = $"Road {Intersections[0].Name} -> {Intersections[Intersections.Count - 1].Name}";
+        RoadLine = new Line(Origin.Position, Destination.Position);
+        Name = $"Road {Origin.Name} -> {Destination.Name}";
 
         Curve2D newCurve = new Curve2D();
 
-        foreach (Intersection intersection in Intersections)
-        {
-            newCurve.AddPoint(intersection.Position);
-        }
+        newCurve.AddPoint(Origin.Position);
+        newCurve.AddPoint(Destination.Position);
 
         Curve = newCurve;
     }
@@ -37,13 +37,11 @@ public partial class Road : Path2D
     // Called after _Ready by the instantiating function
     public void Initialize(Intersection origin, Intersection destination, int speed)
     {
-        origin.Roads.Add(this);
-        Intersections = new List<Intersection>();
-        Intersections.Add(origin);
-        Intersections.Add(destination);
+        Origin = origin;
+        Destination = destination;
 
-        origin.AddRoad(this);
-        destination.AddRoad(this);
+        Origin.AddRoad(this);
+        Destination.AddRoad(this);
 
         People = new List<Person>();
         Speed = speed;
@@ -74,7 +72,7 @@ public partial class Road : Path2D
         }
     }
 
-    public void InsertIntersection(Intersection newIntersection)
+    /*public void InsertIntersection(Intersection newIntersection)
     {
         int i;
 
@@ -105,7 +103,7 @@ public partial class Road : Path2D
         Update();
         _DrawRoad();
 
-    }
+    }*/
 
     public static Vector2 Intersection(Road r, Road s)
         => Line.Intersection(r.RoadLine, s.RoadLine);
