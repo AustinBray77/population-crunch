@@ -17,50 +17,7 @@ public partial class Main : Node
 
 
     //Implement AStar
-    public static Tuple<double, List<Road>> CalculateTime(Intersection start, Intersection end, HashSet<Intersection> intersectionsPassedThrough, double currentBestTime = Double.MaxValue)
-    {
-        if (start == end)
-        {
-            return new Tuple<double, List<Road>>(0, new List<Road>());
-        }
 
-        if (intersectionsPassedThrough.Contains(start))
-        {
-            return new Tuple<double, List<Road>>(double.MaxValue, new List<Road>());
-        }
-
-        intersectionsPassedThrough.Add(start);
-
-        List<Road> nextRoads = new List<Road>();
-
-        foreach (Road road in start.Roads)
-        {
-            nextRoads = nextRoads.RoadInsertionSort(road, start, end);
-        }
-
-        HashSet<Intersection> IntersectionsUsed = new HashSet<Intersection>(intersectionsPassedThrough);
-        Tuple<double, List<Road>> bestResult = new Tuple<double, List<Road>>(double.MaxValue, new List<Road>());
-
-        for (int i = 0; i < nextRoads.Count; i++)
-        {
-            if (IntersectionsUsed.Contains(nextRoads[i].Destination))
-            {
-                continue;
-            }
-
-            Tuple<double, List<Road>> nextResult = CalculateTime(nextRoads[i].Destination, end, intersectionsPassedThrough);
-
-            if (bestResult.Item1 > (nextResult.Item1 + nextRoads[i].TravelTime))
-            {
-                bestResult = new Tuple<double, List<Road>>(nextResult.Item1 + nextRoads[i].TravelTime, nextResult.Item2);
-                bestResult.Item2.Add(nextRoads[i]);
-            }
-
-            IntersectionsUsed.Add(nextRoads[i].Destination);
-        }
-
-        return bestResult;
-    }
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
@@ -234,20 +191,18 @@ public partial class Main : Node
         City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
             cities[25];
 
-        Tuple<double, List<Road>> roads = CalculateTime(start, end, new HashSet<Intersection>());
+        RoadPath roadPath = Pathfinder.CalculateTime(start, end);
         Path2D path = _pathScene.Instantiate<Path2D>();
 
         path.Name = $"Path from {start.Name} to {end.Name}";
 
         AddChild(path);
 
-        roads.Item2.Reverse();
-
         Curve2D pathCurve = new Curve2D();
 
         pathCurve.AddPoint(start.Position);
 
-        foreach (Road road in roads.Item2)
+        foreach (Road road in roadPath.Roads)
         {
             GD.Print(road.Name);
             AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));
