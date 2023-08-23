@@ -18,7 +18,7 @@ public partial class City : Intersection
     public Main MainReference;
 
     // Called when the node enters the scene tree for the first time.
-    public override void _IReady()
+    public override void _Ready()
     {
         GD.Print("City Intialised..");
         _ConfigureVariables();

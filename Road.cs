@@ -41,7 +41,6 @@ public partial class Road : Path2D
         Destination = destination;
 
         Origin.AddRoad(this);
-        Destination.AddRoad(this);
 
         People = new List<Person>();
         Speed = speed;

@@ -54,6 +54,7 @@ public partial class Main : Node
             cities[i].Position = positionList[i];
             cities[i].MainReference = this;
             cities[i].Name = i.ToString();
+            cities[i].SetID(i);
             AddChild(cities[i]);
         }
     }
