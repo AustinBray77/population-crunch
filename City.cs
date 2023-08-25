@@ -20,7 +20,6 @@ public partial class City : Intersection
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        GD.Print("City Intialised..");
         _ConfigureVariables();
         _StartTimers();
         _DrawCity();

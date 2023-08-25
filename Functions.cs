@@ -29,18 +29,6 @@ namespace CityExtras
             Vector2[] partitionA = OriginSort(vectors.Skip(0).Take(vectors.Length / 2).ToArray());
             Vector2[] partitionB = OriginSort(vectors.Skip(vectors.Length / 2).Take(bLen).ToArray());
 
-            GD.Print("part A:");
-            foreach (Vector2 vec in partitionA)
-            {
-                GD.Print(vec);
-            }
-
-            GD.Print("part B:");
-            foreach (Vector2 vec in partitionB)
-            {
-                GD.Print(vec);
-            }
-
             Vector2[] result = new Vector2[vectors.Length];
 
             for (int i = 0, aIndex = 0, bIndex = 0; i < vectors.Length; i++)

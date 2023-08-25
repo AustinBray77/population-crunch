@@ -37,7 +37,7 @@ public partial class Main : Node
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
-        _generator = new Generator(879699, 15000);
+        _generator = new Generator(87999, 15000);
     }
 
     private void _SpawnInitialCities()
@@ -189,8 +189,7 @@ public partial class Main : Node
 
         excludingStart.Remove(start);
 
-        City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
-            cities[25];
+        City end = excludingStart[Rand.Next(0, excludingStart.Count)];
 
         RoadPath roadPath = Pathfinder.CalculateTime(start, end);
         Path2D path = _pathScene.Instantiate<Path2D>();
@@ -203,7 +202,9 @@ public partial class Main : Node
 
         pathCurve.AddPoint(start.Position);
 
-        foreach (Road road in roadPath.Roads)
+        GD.Print("**-- Final Road --**");
+
+        foreach (Road road in roadPath.GetRoads())
         {
             GD.Print(road.Name);
             AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));

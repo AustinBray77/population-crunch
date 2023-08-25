@@ -19,8 +19,7 @@ public partial class Road : Path2D
     [Export]
     public float Length { get; private set; }
 
-    public float TravelTime { get => Length / Speed; }
-
+    public float TravelTime => Length / Speed;
     public void Update()
     {
         RoadLine = new Line(Origin.Position, Destination.Position);

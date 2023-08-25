@@ -13,7 +13,7 @@ public static class Pathfinder
     public static RoadPath CalculateTime(Intersection start, Intersection end)
     {
         intersectionsUsed = new Dictionary<int, RoadPath>();
-        currentBestTime = 1000000;
+        currentBestTime = 10000000;
         return _CalculateTime(start, end, 0, new HashSet<int>());
     }
 
@@ -33,35 +33,43 @@ public static class Pathfinder
 
     private static RoadPath _CalculateTime(Intersection start, Intersection end, double currentPathTime, HashSet<int> path)
     {
+        GD.Print(start.ID);
         if (currentPathTime > currentBestTime)
         {
+            GD.Print("Removed - Too Long");
             return new RoadPath();
         }
 
         if (start == end)
         {
+            GD.Print("Reached Destination");
             currentBestTime = currentPathTime;
             return new RoadPath(new List<Road>());
         }
 
         if (path.Contains(start.ID))
         {
+            GD.Print("Removed - Already Used In Path");
             return new RoadPath();
         }
 
         if (intersectionsUsed.ContainsKey(start.ID))
         {
+            GD.Print("Removed - Already Used Overall");
+            GD.Print(intersectionsUsed[start.ID]);
             return intersectionsUsed[start.ID];
         }
 
-        GD.Print(start.ID.ToString());
+        HashSet<int> newPath = new HashSet<int>();
 
-        HashSet<int> newPath = new HashSet<int>(path);
+        foreach (int i in path)
+        {
+            newPath.Add(i);
+        }
+
         newPath.Add(start.ID);
 
         List<Road> nextRoads = new List<Road>();
-
-        GD.Print(start.Roads.Count.ToString());
 
         foreach (Road road in start.Roads)
         {
@@ -71,19 +79,26 @@ public static class Pathfinder
         RoadPath bestResult = new RoadPath();
         for (int i = 0; i < nextRoads.Count; i++)
         {
+            GD.Print(nextRoads[i].Name);
 
             RoadPath nextResult = _CalculateTime(nextRoads[i].Destination, end, currentPathTime + nextRoads[i].TravelTime, newPath);
 
-            nextResult.Roads.Insert(0, nextRoads[i]);
+            nextResult.InsertRoad(0, nextRoads[i]);
 
             if (bestResult.Time > nextResult.Time)
             {
-                bestResult = new RoadPath(nextResult.Roads);
+                GD.Print("*--Best Result--*");
+
+                GD.Print(nextResult.ToString());
+
+                bestResult = nextResult.Clone();
             }
 
         }
-        intersectionsUsed.Add(start.ID, bestResult);
 
-        return bestResult;
+        intersectionsUsed.Add(start.ID, bestResult.Clone());
+        GD.Print($"Adding Path for {start.ID}\n {bestResult}");
+
+        return bestResult.Clone();
     }
 }
