@@ -3,6 +3,8 @@ using System.Diagnostics;
 
 public class RoadPath
 {
+    public static double MaxTime = 10000000;
+
     private List<Road> _roads { get; set; }
 
     public double Time { get; private set; }
@@ -11,7 +13,7 @@ public class RoadPath
 
     public RoadPath(List<Road> roads)
     {
-        _roads = roads;
+        _roads = new List<Road>(roads);
         Complete = true;
         Time = CheckRoadTime();
     }
@@ -19,20 +21,20 @@ public class RoadPath
     public RoadPath()
     {
         _roads = new List<Road>();
-        Time = 10000000;
+        Time = MaxTime;
         Complete = false;
     }
 
     public RoadPath(List<Road> roads, double time, bool complete)
     {
-        _roads = roads;
+        _roads = new List<Road>(roads);
         Time = time;
         Complete = complete;
     }
 
     public void SetRoads(List<Road> roads)
     {
-        _roads = roads;
+        _roads = new List<Road>(roads);
         Time = CheckRoadTime();
     }
 

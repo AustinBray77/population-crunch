@@ -2,19 +2,28 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using CityExtras;
+using System.Reflection.Metadata.Ecma335;
 
 public partial class Main : Node
 {
+    [Export]
+    public Font font;
+
     public static Random Rand = new Random();
 
     public static Generator _generator;
 
     public static PackedScene _cityScene, _pathScene, _roadScene, _personScene, _junctionScene;
 
+    public static Font _mainFont;
+
     private Camera2D _camera;
 
     public static List<City> cities;
 
+    public static Main Instance;
+
+    public Theme Theme;
 
     //Implement AStar
 
@@ -23,6 +32,7 @@ public partial class Main : Node
     public override void _Ready()
     {
         GD.Print("Started...");
+        Instance = this;
         _LoadResources();
         _SpawnInitialCities();
         _GenerateRoads(3200f);
@@ -38,6 +48,12 @@ public partial class Main : Node
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
         _generator = new Generator(87999, 15000);
+        _mainFont = GD.Load("res://main_font.ttf") as Font;
+        Theme = new Theme()
+        {
+            DefaultFont = _mainFont,
+            DefaultFontSize = 240
+        };
     }
 
     private void _SpawnInitialCities()
@@ -52,7 +68,6 @@ public partial class Main : Node
         {
             cities.Add(_cityScene.Instantiate<City>());
             cities[i].Position = positionList[i];
-            cities[i].MainReference = this;
             cities[i].Name = i.ToString();
             cities[i].SetID(i);
             AddChild(cities[i]);
@@ -79,6 +94,12 @@ public partial class Main : Node
                 GenerateTwoWayRoadBetweenIntersections(cities[i], cities[j]);
             }
         }
+    }
+
+    public void DrawString(string str, Vector2 position)
+    {
+        //CanvasItem cI = new CanvasItem();
+
     }
 
     /*private void _GenerateRoads()
@@ -189,7 +210,8 @@ public partial class Main : Node
 
         excludingStart.Remove(start);
 
-        City end = excludingStart[Rand.Next(0, excludingStart.Count)];
+        City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
+        cities[24];
 
         RoadPath roadPath = Pathfinder.CalculateTime(start, end);
         Path2D path = _pathScene.Instantiate<Path2D>();
@@ -201,12 +223,12 @@ public partial class Main : Node
         Curve2D pathCurve = new Curve2D();
 
         pathCurve.AddPoint(start.Position);
+        path.Position = new Vector2();
 
         GD.Print("**-- Final Road --**");
 
         foreach (Road road in roadPath.GetRoads())
         {
-            GD.Print(road.Name);
             AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));
             pathCurve.AddPoint(road.Destination.Position);
         }
@@ -216,9 +238,9 @@ public partial class Main : Node
         AddChild(Graphics.DrawLine(path.Curve.GetBakedPoints(), Graphics.Green, 20));
 
         Person person = _personScene.Instantiate<Person>();
-        person.Position = path.Position;
 
         path.AddChild(person);
+        person.Position = Vector2.Zero;
 
         person.StartJourney(start, end);
     }
@@ -258,6 +280,9 @@ public partial class Main : Node
 
         return road;
     }
+
+    public int GetTotalCityCount() =>
+        cities.Count;
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)

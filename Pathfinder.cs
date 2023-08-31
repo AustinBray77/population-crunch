@@ -14,71 +14,72 @@ public static class Pathfinder
     {
         intersectionsUsed = new Dictionary<int, RoadPath>();
         currentBestTime = 10000000;
-        return _CalculateTime(start, end, 0, new HashSet<int>());
+        return _CalculateTime(start, end, 0, new int[Main.Instance.GetTotalCityCount()]);
     }
 
-    private static void Log(string s)
-    {
-        if (!File.Exists(filePath))
-        {
-            File.Create(filePath);
-        }
-
-        StreamWriter file = new StreamWriter(filePath, true);
-
-        file.WriteLine(s);
-        file.Flush();
-        file.Close();
-    }
-
-    private static RoadPath _CalculateTime(Intersection start, Intersection end, double currentPathTime, HashSet<int> path)
+    private static RoadPath _CalculateTime(Intersection start, Intersection end, double currentPathTime, int[] path)
     {
         GD.Print(start.ID);
         if (currentPathTime > currentBestTime)
         {
-            GD.Print("Removed - Too Long");
+            GD.Print("RTL");
             return new RoadPath();
         }
 
         if (start == end)
         {
-            GD.Print("Reached Destination");
+            GD.Print("RD");
             currentBestTime = currentPathTime;
             return new RoadPath(new List<Road>());
         }
 
-        if (path.Contains(start.ID))
+        if (path[start.ID] >= 2)
         {
-            GD.Print("Removed - Already Used In Path");
+            GD.Print("RAU-IP");
             return new RoadPath();
         }
 
         if (intersectionsUsed.ContainsKey(start.ID))
         {
-            GD.Print("Removed - Already Used Overall");
-            GD.Print(intersectionsUsed[start.ID]);
+            GD.Print("RAU-O");
+            //GD.Print(intersectionsUsed[start.ID]);
             return intersectionsUsed[start.ID];
         }
 
-        HashSet<int> newPath = new HashSet<int>();
+        int[] newPath = new int[path.Length];
 
-        foreach (int i in path)
+        for (int i = 0; i < path.Length; i++)
         {
-            newPath.Add(i);
+            newPath[i] = path[i];
         }
 
-        newPath.Add(start.ID);
+        newPath[start.ID]++;
 
         List<Road> nextRoads = new List<Road>();
+
+        GD.Print("**--Start Roads--**");
+
+        foreach (Road road in start.Roads)
+        {
+            GD.Print(road.Name);
+        }
 
         foreach (Road road in start.Roads)
         {
             nextRoads = nextRoads.RoadInsertionSort(road, start, end);
         }
 
+        GD.Print("**--Sorted Roads--**");
+
+        foreach (Road road in nextRoads)
+        {
+            GD.Print(road.Name);
+        }
+
         RoadPath bestResult = new RoadPath();
         for (int i = 0; i < nextRoads.Count; i++)
         {
+
             GD.Print(nextRoads[i].Name);
 
             RoadPath nextResult = _CalculateTime(nextRoads[i].Destination, end, currentPathTime + nextRoads[i].TravelTime, newPath);
@@ -87,17 +88,29 @@ public static class Pathfinder
 
             if (bestResult.Time > nextResult.Time)
             {
-                GD.Print("*--Best Result--*");
+                //GD.Print("*--Best Result--*");
 
-                GD.Print(nextResult.ToString());
+                //GD.Print(nextResult.ToString());
 
                 bestResult = nextResult.Clone();
             }
 
         }
 
-        intersectionsUsed.Add(start.ID, bestResult.Clone());
-        GD.Print($"Adding Path for {start.ID}\n {bestResult}");
+
+        if (intersectionsUsed.ContainsKey(start.ID))
+        {
+            if (intersectionsUsed[start.ID].Time > bestResult.Time)
+            {
+                intersectionsUsed[start.ID] = bestResult.Clone();
+                GD.Print($"Adding Path for {start.ID}\n {bestResult}");
+            }
+        }
+        else
+        {
+            intersectionsUsed.Add(start.ID, bestResult.Clone());
+            GD.Print($"Adding Path for {start.ID}\n {bestResult}");
+        }
 
         return bestResult.Clone();
     }

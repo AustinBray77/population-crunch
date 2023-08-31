@@ -15,8 +15,6 @@ public partial class City : Intersection
 
     public Color Color;
 
-    public Main MainReference;
-
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
@@ -44,6 +42,18 @@ public partial class City : Intersection
     private void _DrawCity()
     {
         AddChild(Graphics.DrawCircle(Vector2.Zero, 100, Color, 20));
+
+        Label label = new Label
+        {
+            Text = ID.ToString(),
+            Position = new Vector2(0, 50),
+            Visible = true,
+            Theme = Main.Instance.Theme
+        };
+
+        AddChild(label);
+
+        label.Show();
     }
 
     public void UpdatePopulation()
@@ -64,7 +74,7 @@ public partial class City : Intersection
 
     private void _OnTripTimerTimeout()
     {
-        MainReference.GenerateTrip(this);
+        Main.Instance.GenerateTrip(this);
     }
 
     private void _OnGrowthTimerTimeout()
