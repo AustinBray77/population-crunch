@@ -120,7 +120,6 @@ namespace CityExtras
         public static float Projection2D(Vector2 u, Vector2 v)
         {
             Vector2 Projection = DotProduct2D(u, v) / v.MagnitudeSquared() * v;
-            GD.Print(Projection);
 
             if (AngleBetweenVectorsDeg(u, v) > 90)
             {

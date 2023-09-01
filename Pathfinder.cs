@@ -19,29 +19,24 @@ public static class Pathfinder
 
     private static RoadPath _CalculateTime(Intersection start, Intersection end, double currentPathTime, int[] path)
     {
-        GD.Print(start.ID);
         if (currentPathTime > currentBestTime)
         {
-            GD.Print("RTL");
             return new RoadPath();
         }
 
         if (start == end)
         {
-            GD.Print("RD");
             currentBestTime = currentPathTime;
             return new RoadPath(new List<Road>());
         }
 
         if (path[start.ID] >= 2)
         {
-            GD.Print("RAU-IP");
             return new RoadPath();
         }
 
         if (intersectionsUsed.ContainsKey(start.ID))
         {
-            GD.Print("RAU-O");
             //GD.Print(intersectionsUsed[start.ID]);
             return intersectionsUsed[start.ID];
         }
@@ -57,30 +52,14 @@ public static class Pathfinder
 
         List<Road> nextRoads = new List<Road>();
 
-        GD.Print("**--Start Roads--**");
-
-        foreach (Road road in start.Roads)
-        {
-            GD.Print(road.Name);
-        }
-
         foreach (Road road in start.Roads)
         {
             nextRoads = nextRoads.RoadInsertionSort(road, start, end);
         }
 
-        GD.Print("**--Sorted Roads--**");
-
-        foreach (Road road in nextRoads)
-        {
-            GD.Print(road.Name);
-        }
-
         RoadPath bestResult = new RoadPath();
         for (int i = 0; i < nextRoads.Count; i++)
         {
-
-            GD.Print(nextRoads[i].Name);
 
             RoadPath nextResult = _CalculateTime(nextRoads[i].Destination, end, currentPathTime + nextRoads[i].TravelTime, newPath);
 
@@ -103,13 +82,11 @@ public static class Pathfinder
             if (intersectionsUsed[start.ID].Time > bestResult.Time)
             {
                 intersectionsUsed[start.ID] = bestResult.Clone();
-                GD.Print($"Adding Path for {start.ID}\n {bestResult}");
             }
         }
         else
         {
             intersectionsUsed.Add(start.ID, bestResult.Clone());
-            GD.Print($"Adding Path for {start.ID}\n {bestResult}");
         }
 
         return bestResult.Clone();

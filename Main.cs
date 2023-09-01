@@ -47,7 +47,7 @@ public partial class Main : Node
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
-        _generator = new Generator(87999, 15000);
+        _generator = new Generator(879939, 15000);
         _mainFont = GD.Load("res://main_font.ttf") as Font;
         Theme = new Theme()
         {
@@ -210,8 +210,7 @@ public partial class Main : Node
 
         excludingStart.Remove(start);
 
-        City end = //excludingStart[Rand.Next(0, excludingStart.Count)];
-        cities[24];
+        City end = excludingStart[Rand.Next(0, excludingStart.Count)];
 
         RoadPath roadPath = Pathfinder.CalculateTime(start, end);
         Path2D path = _pathScene.Instantiate<Path2D>();
@@ -225,17 +224,15 @@ public partial class Main : Node
         pathCurve.AddPoint(start.Position);
         path.Position = new Vector2();
 
-        GD.Print("**-- Final Road --**");
-
         foreach (Road road in roadPath.GetRoads())
         {
-            AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));
+            //AddChild(Graphics.DrawCircle(road.Destination.Position, 50, Graphics.Red, 20));
             pathCurve.AddPoint(road.Destination.Position);
         }
 
         path.Curve = pathCurve;
 
-        AddChild(Graphics.DrawLine(path.Curve.GetBakedPoints(), Graphics.Green, 20));
+        //AddChild(Graphics.DrawLine(path.Curve.GetBakedPoints(), Graphics.Green, 20));
 
         Person person = _personScene.Instantiate<Person>();
 
