@@ -77,10 +77,13 @@ namespace CityExtras
             (float)Math.Sqrt(v.MagnitudeSquared());
 
         public static float DotProduct2D(Vector2 u, Vector2 v) =>
-            (u.X * v.X + u.Y * v.Y);
+            u.X * v.X + u.Y * v.Y;
 
         public static float AngleBetweenVectors(Vector2 u, Vector2 v) =>
             (float)Math.Acos(DotProduct2D(u, v) / (u.Magnitude() * v.Magnitude()));
+
+        public static float AngleBetweenVectorsDeg(Vector2 u, Vector2 v) =>
+            Mathf.RadToDeg(AngleBetweenVectors(u, v));
 
         public static float NextRangeFloat(this Random random, float min, float max)
             => (float)(random.NextDouble() * (max - min)) + min;
@@ -116,7 +119,14 @@ namespace CityExtras
 
         public static float Projection2D(Vector2 u, Vector2 v)
         {
-            Vector2 Projection = (DotProduct2D(u, v) / v.MagnitudeSquared()) * v;
+            Vector2 Projection = DotProduct2D(u, v) / v.MagnitudeSquared() * v;
+            GD.Print(Projection);
+
+            if (AngleBetweenVectorsDeg(u, v) > 90)
+            {
+                return Projection.Magnitude() * -1;
+            }
+
             return Projection.Magnitude();
         }
 
@@ -134,7 +144,7 @@ namespace CityExtras
                 Vector2 originToIndexDestination = new Vector2(list[i].Destination.Position.X - origin.Position.X, list[i].Destination.Position.Y - origin.Position.Y);
                 double relativeSpeedOfRoadAtIndex = Projection2D(originToIndexDestination, originToDestinationVector) / item.TravelTime;
 
-                if (relativeSpeedOfRoadAtIndex < relativeSpeedOfInsertedRoad)
+                if (relativeSpeedOfInsertedRoad > relativeSpeedOfRoadAtIndex)
                 {
                     break;
                 }
