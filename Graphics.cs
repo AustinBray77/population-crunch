@@ -14,10 +14,11 @@ namespace CityExtras
 
         public static Line2D DrawLine(Vector2[] points, Color color, int width, Vector2 offset = new Vector2())
         {
-            Line2D line = new Line2D();
-
-            line.DefaultColor = color;
-            line.Width = 20;
+            Line2D line = new Line2D
+            {
+                DefaultColor = color,
+                Width = width
+            };
 
             foreach (Vector2 point in points)
             {
@@ -25,6 +26,13 @@ namespace CityExtras
             }
 
             return line;
+        }
+
+        public static Vector2 CalculateLaneOffset(Vector2 roadVector, Vector2 initialOffset)
+        {
+            float angle = Functions.AngleBetweenVectors(roadVector, Vector2.Up);
+
+            return new Vector2(Mathf.Cos(angle) * initialOffset.X, Mathf.Sin(angle) * initialOffset.X);
         }
 
         public static Line2D[] DrawArrow(Vector2 direction, int length, Color color, int width, Vector2 offset = new Vector2())

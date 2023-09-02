@@ -9,6 +9,8 @@ public partial class Road : Path2D
 
     public Intersection Destination;
 
+    public Vector2 Direction;
+
     public List<Person> People { get; private set; }
 
     public Line RoadLine { get; private set; }
@@ -27,8 +29,13 @@ public partial class Road : Path2D
 
         Curve2D newCurve = new Curve2D();
 
-        newCurve.AddPoint(Origin.Position);
-        newCurve.AddPoint(Destination.Position);
+        Direction = Destination.Position - Origin.Position;
+        Direction /= Direction.Magnitude();
+
+        Vector2 offset = Graphics.CalculateLaneOffset(Direction, new Vector2(100, 0));
+
+        newCurve.AddPoint(Origin.Position + offset);
+        newCurve.AddPoint(Destination.Position + offset);
 
         Curve = newCurve;
     }
@@ -56,7 +63,7 @@ public partial class Road : Path2D
             this.DeleteChild(0);
         }
 
-        Line2D roadLine = Graphics.DrawLine(Curve.GetBakedPoints(), Graphics.TarGray, 20, Position);
+        Line2D roadLine = Graphics.DrawLine(Curve.GetBakedPoints(), Graphics.TarGray, Speed / 2, Position);
 
         //Vector2 roadDirectionVector = Destination.Position - Origin.Position;
 

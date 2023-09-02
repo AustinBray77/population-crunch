@@ -41,6 +41,9 @@ public class RoadPath
     public List<Road> GetRoads() =>
         _roads;
 
+    public Road GetRoad(int index) =>
+        _roads[index];
+
     public void InsertRoad(int index, Road road)
     {
         _roads.Insert(index, road);
