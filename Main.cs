@@ -25,10 +25,6 @@ public partial class Main : Node
 
     public Theme Theme;
 
-    public Config GeneratorConfiguration;
-
-    public Config GraphicsConfiguration;
-
     //Implement AStar
 
 
@@ -39,24 +35,19 @@ public partial class Main : Node
         Instance = this;
         _LoadResources();
         _SpawnInitialCities();
-        _GenerateRoads(GeneratorConfiguration.GetValueAs<float>("RoadMaxDistance"));
+        _GenerateRoads(_generator.Configuration.GetValueAs<float>("RoadMaxDistance"));
         GenerateTrip(cities[0]);
     }
 
     private void _LoadResources()
     {
-        _LoadGeneratorConfigFile();
+        _ConfigureResources();
         _cityScene = GD.Load("res://City.tscn") as PackedScene;
         _roadScene = GD.Load("res://Road.tscn") as PackedScene;
         _pathScene = GD.Load("res://Path2D.tscn") as PackedScene;
         _personScene = GD.Load("res://Person.tscn") as PackedScene;
         _junctionScene = GD.Load("res://Junction.tscn") as PackedScene;
         _camera = GetChild(0, false) as Camera2D;
-        _generator =
-            new Generator(
-                GeneratorConfiguration.GetValueAs<int>("Seed"),
-                GeneratorConfiguration.GetValueAs<float>("ChunkSize")
-            );
         _mainFont = GD.Load("res://main_font.ttf") as Font;
         Theme = new Theme()
         {
@@ -65,15 +56,10 @@ public partial class Main : Node
         };
     }
 
-    private void _LoadGeneratorConfigFile()
+    private void _ConfigureResources()
     {
-        GeneratorConfiguration = new Config(new List<string>()
-            {
-                "Seed", "ChunkSize", "CityMinDistance", "CityDensity",
-                "RoadMaxDistance", "RoadMinSpeed", "RoadMaxSpeed"
-            });
-
-        GeneratorConfiguration.LoadValuesFromFile(ProjectSettings.GlobalizePath("res://generator.config"));
+        _generator = new Generator(ProjectSettings.GlobalizePath("res://generator.config"));
+        Graphics g = new Graphics(ProjectSettings.GlobalizePath("res://graphics.config"));
     }
 
     private void _SpawnInitialCities()
@@ -81,7 +67,7 @@ public partial class Main : Node
         cities = new List<City>();
 
         Vector2[] positionList = _generator.GenerateStructures(
-            GeneratorConfiguration.GetValueAs<float>("CityMinDistance"), GeneratorConfiguration.GetValueAs<float>("CityDensity"));
+            _generator.Configuration.GetValueAs<float>("CityMinDistance"), _generator.Configuration.GetValueAs<float>("CityDensity"));
 
         positionList = Functions.OriginSort(positionList);
 
@@ -291,7 +277,7 @@ public partial class Main : Node
         road.Curve = curve;
 
         AddChild(road);
-        road.Initialize(origin, end, Rand.Next(GeneratorConfiguration.GetValueAs<int>("RoadMinSpeed"), GeneratorConfiguration.GetValueAs<int>("RoadMaxSpeed")));
+        road.Initialize(origin, end, Rand.Next(_generator.Configuration.GetValueAs<int>("RoadMinSpeed"), _generator.Configuration.GetValueAs<int>("RoadMaxSpeed")));
 
         return road;
     }

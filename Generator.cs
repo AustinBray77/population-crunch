@@ -2,15 +2,20 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public class Generator
+public class Generator : Configureable
 {
     private int _seed { get; set; }
     private float _chunkSize { get; set; }
 
-    public Generator(int seed, float chunkSize)
+    public Generator(string configPath)
     {
-        _seed = seed;
-        _chunkSize = chunkSize;
+        Configure(configPath, new()
+            {
+                "Seed", "ChunkSize", "CityMinDistance", "CityDensity",
+                "RoadMaxDistance", "RoadMinSpeed", "RoadMaxSpeed"
+            });
+        _seed = Configuration.GetValueAs<int>("Seed");
+        _chunkSize = Configuration.GetValueAs<float>("ChunkSize");
     }
 
     public Vector2[] GenerateStructures(float minimumDistance, float density)

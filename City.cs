@@ -41,7 +41,7 @@ public partial class City : Intersection
 
     private void _DrawCity()
     {
-        AddChild(Graphics.DrawCircle(Vector2.Zero, 100, Color, 20));
+        AddChild(Graphics.DrawCircle(Vector2.Zero, Graphics.s_Configuration.GetValueAs<int>("CityRadius"), Color, 20));
 
         Label label = new Label
         {

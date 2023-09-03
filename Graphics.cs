@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using Godot;
 
 namespace CityExtras
 {
-    public static class Graphics
+    public class Graphics : Configureable
     {
         public static readonly Color White = new Color(1, 1, 1, 1);
         public static readonly Color TarGray = new Color(0.1f, 0.1f, 0.1f, 1);
@@ -11,6 +13,20 @@ namespace CityExtras
         public static readonly Color Yellow = new Color(1, 1, 0, 1);
         public static readonly Color Red = new Color(1, 0, 0, 1);
         public static readonly Color Orange = new Color(1, 0.5f, 0, 1);
+
+        public static Graphics Instance;
+
+        public static Config s_Configuration => Instance.Configuration;
+
+
+        public Graphics(string configPath)
+        {
+            Configure(configPath, new() { "RoadSpacing", "RoadColor",
+                "RoadThicknessMultiplier", "CityRadius", "PersonRadius" });
+
+            Instance = this;
+        }
+
 
         public static Line2D DrawLine(Vector2[] points, Color color, int width, Vector2 offset = new Vector2())
         {

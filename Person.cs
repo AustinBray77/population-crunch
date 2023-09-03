@@ -2,6 +2,7 @@ using CityExtras;
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 public partial class Person : PathFollow2D
 {
@@ -28,12 +29,10 @@ public partial class Person : PathFollow2D
         _curRoadIndex = 0;
         _distanceAlongRoad = 0f;
 
-        _SetOffset();
-
 
         GD.Print($"Journey Started -> {_homeCity.Name}, {_destination.Name}");
 
-        Line2D line = Graphics.DrawCircle(Position, 20, _destination.Color, 5);
+        Line2D line = Graphics.DrawCircle(Position, Graphics.s_Configuration.GetValueAs<int>("PersonRadius"), _destination.Color, 5);
 
         AddChild(line);
     }
@@ -44,16 +43,17 @@ public partial class Person : PathFollow2D
         //GD.Print("Here Buddy Circle");
     }
 
-    private void _IncrementRoad()
+    private bool _IncrementRoad()
     {
+        if (_curRoadIndex == _path.GetRoads().Count - 1)
+        {
+            Dispose();
+            return false;
+        }
+
         _curRoad = _path.GetRoads()[++_curRoadIndex];
         _distanceAlongRoad = 0f;
-        //_SetOffset();
-    }
-
-    private void _SetOffset()
-    {
-        Position = _curRoad.Position + new Vector2(20, 0);
+        return true;
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -67,21 +67,19 @@ public partial class Person : PathFollow2D
 
         if (_distanceAlongRoad > _curRoad.Length)
         {
-            _IncrementRoad();
+            bool wasSuccessful = _IncrementRoad();
+
+            if (!wasSuccessful)
+            {
+                return;
+            }
             //GD.Print($"Switching Roads, Current Speed is now: {_curRoad.Speed}");
         }
 
 
         int speed = _curRoad.Speed;
 
-        float preProgress = ProgressRatio;
-
         Progress += speed;
         _distanceAlongRoad += speed;
-
-        if (preProgress > ProgressRatio)
-        {
-            Dispose();
-        }
     }
 }

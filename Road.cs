@@ -32,7 +32,7 @@ public partial class Road : Path2D
         Direction = Destination.Position - Origin.Position;
         Direction /= Direction.Magnitude();
 
-        Vector2 offset = Graphics.CalculateLaneOffset(Direction, new Vector2(100, 0));
+        Vector2 offset = Graphics.CalculateLaneOffset(Direction, new Vector2(Graphics.s_Configuration.GetValueAs<float>("RoadSpacing"), 0));
 
         newCurve.AddPoint(Origin.Position + offset);
         newCurve.AddPoint(Destination.Position + offset);
@@ -63,7 +63,7 @@ public partial class Road : Path2D
             this.DeleteChild(0);
         }
 
-        Line2D roadLine = Graphics.DrawLine(Curve.GetBakedPoints(), Graphics.TarGray, Speed / 2, Position);
+        Line2D roadLine = Graphics.DrawLine(Curve.GetBakedPoints(), Graphics.TarGray, (int)(Speed * Graphics.s_Configuration.GetValueAs<float>("RoadThicknessMultiplier")), Position);
 
         //Vector2 roadDirectionVector = Destination.Position - Origin.Position;
 
